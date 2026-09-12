@@ -1,0 +1,19 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+/** Room codes are 4 digits (matches backend). Strips non-digits and caps length. */
+export const ROOM_CODE_LEN = 4;
+
+export function normalizeRoomId(raw: string | string[] | undefined | null): string {
+  const s = Array.isArray(raw) ? raw[0] : raw;
+  if (s == null) return "";
+  const trimmed = String(s).trim().toLowerCase();
+  if (/^\d+$/.test(trimmed)) {
+    return trimmed.slice(0, ROOM_CODE_LEN);
+  }
+  return trimmed.replace(/[^a-z0-9_-]/g, "").slice(0, 32);
+}
