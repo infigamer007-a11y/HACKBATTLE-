@@ -1,0 +1,21 @@
+services:
+  # 1. TrueVoice FastAPI Backend (Persistent WebSockets + Audio Ingress + Claude AI)
+  - type: web
+    name: truevoice-backend
+    runtime: docker
+    dockerfilePath: TrueVoice/backend/Dockerfile
+    dockerContext: TrueVoice/backend
+    plan: free
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: SPEECHMATICS_API_KEY
+        sync: false
+      - key: PUTER_AUTH_TOKEN
+        sync: false
+      - key: THYMIA_API_KEY
+        value: dummy-thymia-key
+      - key: ANTHROPIC_API_KEY
+        value: dummy-anthropic-key
+      - key: ALLOWED_ORIGINS
+        value: "*"
