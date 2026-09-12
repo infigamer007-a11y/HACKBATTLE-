@@ -1,7 +1,8 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { NumberTicker } from "@/components/ui/number-ticker";
@@ -399,17 +400,17 @@ const PARTNERS: {
   role: string;
   Mark: () => React.JSX.Element;
 }[] = [
-  { name: "Speechmatics", role: "Medical STT · real-time", Mark: SpeechmaticsMark },
-  {
-    name: "Thymia Sentinel",
-    role: "Voice biomarkers · Helios / Apollo / Psyche",
-    Mark: ThymiaMark,
-  },
-  { name: "Anthropic Claude", role: "Flag gloss + report synthesis", Mark: ClaudeMark },
-  { name: "WebRTC", role: "Cross-device video + audio", Mark: WebRTCMark },
-  { name: "FastAPI", role: "Streaming event bus · sub-second", Mark: FastAPIMark },
-  { name: "Next.js", role: "Clinician dashboard · App Router", Mark: NextMark },
-];
+    { name: "Speechmatics", role: "Medical STT · real-time", Mark: SpeechmaticsMark },
+    {
+      name: "Thymia Sentinel",
+      role: "Voice biomarkers · Helios / Apollo / Psyche",
+      Mark: ThymiaMark,
+    },
+    { name: "Anthropic Claude", role: "Flag gloss + report synthesis", Mark: ClaudeMark },
+    { name: "WebRTC", role: "Cross-device video + audio", Mark: WebRTCMark },
+    { name: "FastAPI", role: "Streaming event bus · sub-second", Mark: FastAPIMark },
+    { name: "Next.js", role: "Clinician dashboard · App Router", Mark: NextMark },
+  ];
 
 export default function TrueVoiceLanding() {
   return (
