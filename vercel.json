@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npm run build --prefix TrueVoice/frontend",
+  "installCommand": "npm install --prefix TrueVoice/frontend",
+  "outputDirectory": "TrueVoice/frontend/.next",
+  "env": {
+    "BACKEND_HTTP_ORIGIN": "https://truevoice-backend-1mh1.onrender.com",
+    "NEXT_PUBLIC_BACKEND_HTTP_URL": "https://truevoice-backend-1mh1.onrender.com",
+    "NEXT_PUBLIC_BACKEND_WS_URL": "wss://truevoice-backend-1mh1.onrender.com"
+  }
+}

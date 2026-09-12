@@ -19,3 +19,23 @@ services:
         value: dummy-anthropic-key
       - key: ALLOWED_ORIGINS
         value: "*"
+
+  # 2. TrueVoice Next.js Frontend (WebRTC + Dashboards + Real-time Audio/Video UI)
+  - type: web
+    name: truevoice-frontend
+    runtime: node
+    rootDir: TrueVoice/frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: BACKEND_HTTP_ORIGIN
+        value: https://truevoice-backend-1mh1.onrender.com
+      - key: NEXT_PUBLIC_BACKEND_HTTP_URL
+        value: https://truevoice-backend-1mh1.onrender.com
+      - key: NEXT_PUBLIC_BACKEND_WS_URL
+        value: wss://truevoice-backend-1mh1.onrender.com

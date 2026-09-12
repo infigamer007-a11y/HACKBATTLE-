@@ -64,11 +64,11 @@ type Opts = {
 };
 
 function getSignalingWsUrl(role: Role, roomId: string): string {
-  if (typeof window !== "undefined") {
-    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${window.location.host}/ws/signal/${encodeURIComponent(role)}/${encodeURIComponent(roomId)}`;
-  }
-  const base = process.env.NEXT_PUBLIC_BACKEND_WS_URL || "ws://localhost:8000";
+  const fallback =
+    typeof window !== "undefined"
+      ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
+      : "ws://localhost:8000";
+  const base = (process.env.NEXT_PUBLIC_BACKEND_WS_URL || fallback).replace(/\/$/, "");
   return `${base}/ws/signal/${encodeURIComponent(role)}/${encodeURIComponent(roomId)}`;
 }
 

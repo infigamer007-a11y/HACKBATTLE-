@@ -81,12 +81,14 @@ export type RoomCreateResponse = {
  * Kept for scripts or rare direct backend calls.
  */
 export const BACKEND_HTTP =
-  typeof window !== "undefined"
+  process.env.NEXT_PUBLIC_BACKEND_HTTP_URL ||
+  (typeof window !== "undefined"
     ? window.location.origin
-    : (process.env.NEXT_PUBLIC_BACKEND_HTTP_URL ?? "http://localhost:8000");
+    : "http://localhost:8000");
 
-/** WebSocket URL points at the current origin (use `wss://` when served over HTTPS). */
+/** WebSocket URL points to the backend (or current origin fallback if unconfigured). */
 export const BACKEND_WS =
-  typeof window !== "undefined"
+  process.env.NEXT_PUBLIC_BACKEND_WS_URL ||
+  (typeof window !== "undefined"
     ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
-    : (process.env.NEXT_PUBLIC_BACKEND_WS_URL ?? "ws://localhost:8000");
+    : "ws://localhost:8000");
