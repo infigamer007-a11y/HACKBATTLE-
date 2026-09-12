@@ -27,6 +27,7 @@ export default function OnlinePatientPage() {
   const [hasCamera, setHasCamera] = useState(false);
 
   const captureRef = useRef<AudioCaptureHandle | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const {
     prompt,
     soundMuted,

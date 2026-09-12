@@ -185,11 +185,15 @@ class SpeechmaticsService:
         self,
         client_factory: Callable[[str], Any] | None = None,
         segment_extractor: Callable[[Any], list[tuple[str | None, str]]] | None = None,
+        transcript_extractor: Callable[[Any], Any] | None = None,
         api_key: str = "",
         split_speakers: bool = False,
     ):
         self._client_factory = client_factory or _default_client_factory
-        self._extract = segment_extractor or _extract_segments
+        if transcript_extractor is not None and segment_extractor is None:
+            self._extract = lambda msg: [(None, transcript_extractor(msg))]
+        else:
+            self._extract = segment_extractor or _extract_segments
         self._api_key = api_key
         self._split_speakers = split_speakers
 

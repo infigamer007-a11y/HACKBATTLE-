@@ -24,22 +24,17 @@ export interface CallPrompt {
 }
 
 interface UseCallAlertsOpts {
-  selfRole: Role;
+  selfRole?: Role;
   peerLabel: string; // "Patient" or "Clinician"
   roomId?: string | null;
 }
 
-export function useCallAlerts({ selfRole, peerLabel, roomId }: UseCallAlertsOpts) {
+export function useCallAlerts({ peerLabel, roomId }: UseCallAlertsOpts) {
   const [prompt, setPrompt] = useState<CallPrompt | null>(null);
-  const [soundMuted, setSoundMuted] = useState(false);
+  const [soundMuted, setSoundMuted] = useState<boolean>(() => isCallSoundsMuted());
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const originalTitleRef = useRef<string>("");
-
-  // Sync initial muted state from localStorage
-  useEffect(() => {
-    setSoundMuted(isCallSoundsMuted());
-  }, []);
 
   const clearTitleFlash = useCallback(() => {
     if (titleIntervalRef.current) {

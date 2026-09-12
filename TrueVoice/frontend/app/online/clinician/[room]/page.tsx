@@ -32,6 +32,8 @@ export default function OnlineClinicianPage() {
   const captureRef = useRef<AudioCaptureHandle | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const events = useDashboardEvents(status === "live" ? roomId : null);
+
   const {
     prompt,
     soundMuted,

@@ -30,7 +30,10 @@ async def audio_ingress(ws: WebSocket, role: str, room_id: str, mode: str = "") 
         await ws.close(code=4404, reason=f"invalid role: {role}")
         return
 
-    room = rooms_mgr.get_or_create(room_id)
+    room = rooms_mgr.get(room_id)
+    if room is None:
+        await ws.close(code=4404, reason=f"room not found: {room_id}")
+        return
 
     if role not in room.audio_distributors:
         room.audio_distributors[role] = AudioDistributor()

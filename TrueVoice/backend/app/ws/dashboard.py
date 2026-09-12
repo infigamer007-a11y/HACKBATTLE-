@@ -17,7 +17,10 @@ router = APIRouter()
 async def dashboard_stream(ws: WebSocket, room_id: str) -> None:
     await ws.accept()
     room_id = (room_id or "").strip().lower()
-    room = rooms_mgr.get_or_create(room_id)
+    room = rooms_mgr.get(room_id)
+    if room is None:
+        await ws.close(code=4404, reason=f"room not found: {room_id}")
+        return
 
     # Subscribe FIRST so we don't miss events that arrive during replay.
     # Cost: a new event during replay may appear twice (once via replay,

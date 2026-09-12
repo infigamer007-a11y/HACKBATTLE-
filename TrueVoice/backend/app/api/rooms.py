@@ -14,5 +14,7 @@ def create_room() -> RoomCreateResponse:
 
 @router.get("/{room_id}", response_model=RoomExistsResponse)
 def get_room(room_id: str) -> RoomExistsResponse:
-    room = rooms.get_or_create(room_id)
+    room = rooms.get(room_id)
+    if room is None:
+        return RoomExistsResponse(exists=False, created_at_ms=None)
     return RoomExistsResponse(exists=True, created_at_ms=room.created_at_ms)
