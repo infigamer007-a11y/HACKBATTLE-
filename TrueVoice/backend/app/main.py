@@ -56,6 +56,16 @@ def _log_startup() -> None:
         logger.info("%s loaded: %s", name, masked)
 
 
+@app.get("/")
+def root() -> dict:
+    return {
+        "service": "TrueVoice Backend API",
+        "status": "online",
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health() -> dict:
     return {"ok": True}
