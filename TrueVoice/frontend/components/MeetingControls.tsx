@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
   leaveLabel?: string;
   showLeave?: boolean;
   compact?: boolean;
+  soundMuted?: boolean;
+  onToggleSound?: () => void;
   className?: string;
 };
 
@@ -26,6 +29,8 @@ export default function MeetingControls({
   leaveLabel = "Leave",
   showLeave = true,
   compact = false,
+  soundMuted = false,
+  onToggleSound,
   className,
 }: Props) {
   const size = compact ? "h-10 w-10" : "h-12 w-12";
@@ -62,6 +67,21 @@ export default function MeetingControls({
       >
         {camOn ? <CamIcon size={iconSize} /> : <CamOffIcon size={iconSize} />}
       </PillButton>
+
+      {onToggleSound && (
+        <PillButton
+          active={!soundMuted}
+          onClick={onToggleSound}
+          sizeClass={size}
+          title={soundMuted ? "Unmute call sound alerts" : "Mute call sound alerts"}
+        >
+          {soundMuted ? (
+            <VolumeX size={iconSize} className="text-red-400" />
+          ) : (
+            <Volume2 size={iconSize} />
+          )}
+        </PillButton>
+      )}
 
       {showLeave && onLeave && (
         <button

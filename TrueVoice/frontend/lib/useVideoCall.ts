@@ -61,6 +61,8 @@ type Opts = {
   role: Role;
   localStream: MediaStream | null;
   enabled: boolean;
+  onPeerJoined?: (peer: Role) => void;
+  onPeerLeft?: (peer: Role) => void;
 };
 
 function getSignalingWsUrl(role: Role, roomId: string): string {
@@ -77,7 +79,14 @@ function getSignalingWsUrl(role: Role, roomId: string): string {
  * Clinician is the impolite (offering) peer; patient is polite (answering).
  * Signaling runs over /ws/signal and relays SDP + ICE.
  */
-export function useVideoCall({ roomId, role, localStream, enabled }: Opts): VideoCallState {
+export function useVideoCall({
+  roomId,
+  role,
+  localStream,
+  enabled,
+  onPeerJoined,
+  onPeerLeft,
+}: Opts): VideoCallState {
   const [state, setState] = useState<VideoCallState>(INITIAL);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -86,10 +95,22 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
   const remoteDescSet = useRef(false);
   const peerPresentRef = useRef(false);
+  const notifiedPeerPresentRef = useRef(false);
   const activeRoleRef = useRef<Role>(role);
   const localStreamRef = useRef<MediaStream | null>(localStream);
   const destroyedRef = useRef(false);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const onPeerJoinedRef = useRef(onPeerJoined);
+  const onPeerLeftRef = useRef(onPeerLeft);
+
+  useEffect(() => {
+    onPeerJoinedRef.current = onPeerJoined;
+  }, [onPeerJoined]);
+
+  useEffect(() => {
+    onPeerLeftRef.current = onPeerLeft;
+  }, [onPeerLeft]);
 
   useEffect(() => {
     activeRoleRef.current = role;
@@ -318,6 +339,10 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
             if (msg.peer) {
               peerPresentRef.current = true;
               setState((s) => ({ ...s, peerPresent: true }));
+              if (!notifiedPeerPresentRef.current) {
+                notifiedPeerPresentRef.current = true;
+                onPeerJoinedRef.current?.(msg.peer);
+              }
               if (!isPolite()) {
                 console.log(tag, "Impolite peer initiating offer upon ready...");
                 await createAndSendOffer();
@@ -325,21 +350,33 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
             }
             break;
 
-          case "peer-joined":
+          case "peer-joined": {
+            const peerRole =
+              msg.peer || (activeRoleRef.current === "patient" ? "clinician" : "patient");
             peerPresentRef.current = true;
             setState((s) => ({ ...s, peerPresent: true }));
+            if (!notifiedPeerPresentRef.current) {
+              notifiedPeerPresentRef.current = true;
+              onPeerJoinedRef.current?.(peerRole);
+            }
             if (!isPolite()) {
               console.log(tag, "Impolite peer initiating offer upon peer-joined...");
               await createAndSendOffer();
             }
             break;
+          }
 
-          case "peer-left":
+          case "peer-left": {
             console.log(tag, "Peer left the room");
+            const peerRole =
+              msg.peer || (activeRoleRef.current === "patient" ? "clinician" : "patient");
             peerPresentRef.current = false;
+            notifiedPeerPresentRef.current = false;
             setState((s) => ({ ...s, peerPresent: false, peerConnected: false }));
+            onPeerLeftRef.current?.(peerRole);
             resetPeerConnection();
             break;
+          }
 
           case "offer": {
             try {
@@ -434,6 +471,7 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
       pcRef.current = null;
       remoteStreamRef.current = null;
       peerPresentRef.current = false;
+      notifiedPeerPresentRef.current = false;
       setState(INITIAL);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -11,6 +11,8 @@ import { BACKEND_WS } from "@/lib/types";
 import { normalizeRoomId, ROOM_CODE_LEN, cn } from "@/lib/utils";
 import { requestCallMedia, describeMediaError } from "@/lib/userMedia";
 import { useVideoCall } from "@/lib/useVideoCall";
+import { useCallAlerts } from "@/lib/useCallAlerts";
+import CallPromptBanner from "@/components/CallPromptBanner";
 
 type Status = "idle" | "starting" | "live" | "ended";
 
@@ -30,13 +32,28 @@ export default function OnlineClinicianPage() {
   const captureRef = useRef<AudioCaptureHandle | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const events = useDashboardEvents(status === "live" ? roomId : null);
+  const {
+    prompt,
+    soundMuted,
+    dismissPrompt,
+    onPeerJoined,
+    onPeerLeft,
+    notifyCallInitiated,
+    notifyCallEnded,
+    toggleSound,
+  } = useCallAlerts({
+    selfRole: "clinician",
+    peerLabel: "Patient",
+    roomId,
+  });
 
   const call = useVideoCall({
     roomId: status === "live" ? roomId : null,
     role: "clinician",
     localStream: stream,
     enabled: status === "live",
+    onPeerJoined,
+    onPeerLeft,
   });
 
   const validRoom = !!roomId && roomId.length === ROOM_CODE_LEN;
@@ -86,6 +103,7 @@ export default function OnlineClinicianPage() {
 
       setStartedAtMs(Date.now());
       setStatus("live");
+      notifyCallInitiated();
     } catch (e) {
       console.error(e);
       setError(describeMediaError(e));
@@ -94,6 +112,7 @@ export default function OnlineClinicianPage() {
   };
 
   const endConsultation = () => {
+    notifyCallEnded();
     stopEverything();
     setStatus("ended");
     if (roomId) router.push(`/report/${roomId}`);
@@ -147,46 +166,56 @@ export default function OnlineClinicianPage() {
   }
 
   return (
-    <Dashboard
-      mode="telehealth"
-      events={events}
-      roomId={roomId}
-      startedAtMs={startedAtMs}
-      localStream={stream}
-      onEndConsultation={endConsultation}
-      headerStatusSlot={
-        <div className="flex items-center gap-1.5">
-          <span
-            className={cn(
-              "h-1.5 w-1.5 rounded-full",
-              call.peerConnected
-                ? "bg-emerald-500 tv-pulse-dot"
-                : call.peerPresent
-                ? "bg-amber-500 tv-pulse-dot"
-                : "bg-neutral-300"
-            )}
+    <>
+      <CallPromptBanner
+        prompt={prompt}
+        onDismiss={dismissPrompt}
+        soundMuted={soundMuted}
+        onToggleSound={toggleSound}
+      />
+      <Dashboard
+        mode="telehealth"
+        events={events}
+        roomId={roomId}
+        startedAtMs={startedAtMs}
+        localStream={stream}
+        onEndConsultation={endConsultation}
+        headerStatusSlot={
+          <div className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                call.peerConnected
+                  ? "bg-emerald-500 tv-pulse-dot"
+                  : call.peerPresent
+                  ? "bg-amber-500 tv-pulse-dot"
+                  : "bg-neutral-300"
+              )}
+            />
+            <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-500">
+              Video · {call.peerConnected ? "on" : call.peerPresent ? "handshake" : "waiting"}
+            </span>
+          </div>
+        }
+        topRightSlot={
+          <ClinicianVideoPanel
+            selfStream={stream}
+            peerStream={call.remoteStream}
+            peerPresent={call.peerPresent}
+            signalingConnected={call.signalingConnected}
+            peerConnected={call.peerConnected}
+            error={call.error}
+            soundMuted={soundMuted}
+            onToggleSound={toggleSound}
+            micOn={micOn}
+            camOn={camOn}
+            camAvailable={hasCamera}
+            onToggleMic={toggleMic}
+            onToggleCam={toggleCam}
           />
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-500">
-            Video · {call.peerConnected ? "on" : call.peerPresent ? "handshake" : "waiting"}
-          </span>
-        </div>
-      }
-      topRightSlot={
-        <ClinicianVideoPanel
-          selfStream={stream}
-          peerStream={call.remoteStream}
-          peerPresent={call.peerPresent}
-          signalingConnected={call.signalingConnected}
-          peerConnected={call.peerConnected}
-          error={call.error}
-          micOn={micOn}
-          camOn={camOn}
-          camAvailable={hasCamera}
-          onToggleMic={toggleMic}
-          onToggleCam={toggleCam}
-        />
-      }
-    />
+        }
+      />
+    </>
   );
 }
 

@@ -15,6 +15,8 @@ type Props = {
   camOn: boolean;
   camAvailable: boolean;
   error?: string | null;
+  soundMuted?: boolean;
+  onToggleSound?: () => void;
   onToggleMic: () => void;
   onToggleCam: () => void;
 };
@@ -29,6 +31,8 @@ export default function ClinicianVideoPanel({
   micOn,
   camOn,
   camAvailable,
+  soundMuted,
+  onToggleSound,
   onToggleMic,
   onToggleCam,
 }: Props) {
@@ -104,6 +108,8 @@ export default function ClinicianVideoPanel({
           camAvailable={camAvailable}
           onToggleMic={onToggleMic}
           onToggleCam={onToggleCam}
+          soundMuted={soundMuted}
+          onToggleSound={onToggleSound}
           showLeave={false}
           compact
           className="bg-neutral-900/90 border-neutral-800"

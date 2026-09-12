@@ -8,6 +8,8 @@ import { BACKEND_WS } from "@/lib/types";
 import { normalizeRoomId, ROOM_CODE_LEN, cn } from "@/lib/utils";
 import { requestCallMedia, describeMediaError } from "@/lib/userMedia";
 import { useVideoCall } from "@/lib/useVideoCall";
+import { useCallAlerts } from "@/lib/useCallAlerts";
+import CallPromptBanner from "@/components/CallPromptBanner";
 import VideoTile from "@/components/VideoTile";
 import MeetingControls from "@/components/MeetingControls";
 
@@ -25,13 +27,28 @@ export default function OnlinePatientPage() {
   const [hasCamera, setHasCamera] = useState(false);
 
   const captureRef = useRef<AudioCaptureHandle | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const {
+    prompt,
+    soundMuted,
+    dismissPrompt,
+    onPeerJoined,
+    onPeerLeft,
+    notifyCallInitiated,
+    notifyCallEnded,
+    toggleSound,
+  } = useCallAlerts({
+    selfRole: "patient",
+    peerLabel: "Clinician",
+    roomId,
+  });
 
   const call = useVideoCall({
     roomId: status === "live" ? roomId : null,
     role: "patient",
     localStream: stream,
     enabled: status === "live",
+    onPeerJoined,
+    onPeerLeft,
   });
 
   const validRoom = !!roomId && roomId.length === ROOM_CODE_LEN;
@@ -80,6 +97,7 @@ export default function OnlinePatientPage() {
       });
 
       setStatus("live");
+      notifyCallInitiated();
     } catch (e) {
       console.error(e);
       setError(describeMediaError(e));
@@ -88,6 +106,7 @@ export default function OnlinePatientPage() {
   };
 
   const leave = () => {
+    notifyCallEnded();
     stopEverything();
     setStatus("ended");
   };
@@ -146,6 +165,13 @@ export default function OnlinePatientPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col relative overflow-hidden">
+      <CallPromptBanner
+        prompt={prompt}
+        onDismiss={dismissPrompt}
+        soundMuted={soundMuted}
+        onToggleSound={toggleSound}
+      />
+
       {/* Top bar */}
       <header className="relative z-30 flex items-center justify-between px-5 md:px-8 py-3 bg-black/70 backdrop-blur-md border-b border-white/5">
         <Link
@@ -232,6 +258,8 @@ export default function OnlinePatientPage() {
           camAvailable={hasCamera}
           onToggleMic={toggleMic}
           onToggleCam={toggleCam}
+          soundMuted={soundMuted}
+          onToggleSound={toggleSound}
           onLeave={leave}
           leaveLabel="Leave call"
         />
