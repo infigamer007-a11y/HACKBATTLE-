@@ -80,15 +80,41 @@ export type RoomCreateResponse = {
  * Prefer same-origin HTTP API routes (`/api/...`) — see `next.config.ts` rewrites.
  * Kept for scripts or rare direct backend calls.
  */
-export const BACKEND_HTTP =
-  process.env.NEXT_PUBLIC_BACKEND_HTTP_URL ||
-  (typeof window !== "undefined"
-    ? window.location.origin
-    : "http://localhost:8000");
+export function resolveBackendWs(): string {
+  if (typeof window !== "undefined") {
+    const isHttps = window.location.protocol === "https:";
+    const proto = isHttps ? "wss:" : "ws:";
+    const hostname = window.location.hostname;
 
-/** WebSocket URL points to the backend (or current origin fallback if unconfigured). */
-export const BACKEND_WS =
-  process.env.NEXT_PUBLIC_BACKEND_WS_URL ||
-  (typeof window !== "undefined"
-    ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
-    : "ws://localhost:8000");
+    // 1. Local development
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return `${proto}//127.0.0.1:8000`;
+    }
+
+    // 2. Public tunnel (Cloudflare trycloudflare.com, pinggy, ngrok) - routes /ws through same origin
+    if (hostname.includes("trycloudflare.com") || hostname.includes("pinggy") || hostname.includes("ngrok")) {
+      return `${proto}//${window.location.host}`;
+    }
+
+    // 3. Remote production (Vercel, Render frontend)
+    return "wss://truevoice-backend-1mh1.onrender.com";
+  }
+  return process.env.NEXT_PUBLIC_BACKEND_WS_URL || "ws://127.0.0.1:8000";
+}
+
+export function resolveBackendHttp(): string {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://127.0.0.1:8000";
+    }
+    if (hostname.includes("trycloudflare.com") || hostname.includes("pinggy") || hostname.includes("ngrok")) {
+      return window.location.origin;
+    }
+    return "https://truevoice-backend-1mh1.onrender.com";
+  }
+  return process.env.NEXT_PUBLIC_BACKEND_HTTP_URL || "http://127.0.0.1:8000";
+}
+
+export const BACKEND_HTTP = typeof window !== "undefined" ? resolveBackendHttp() : "http://127.0.0.1:8000";
+export const BACKEND_WS = typeof window !== "undefined" ? resolveBackendWs() : "ws://127.0.0.1:8000";
