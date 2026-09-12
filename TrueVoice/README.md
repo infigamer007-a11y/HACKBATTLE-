@@ -2,8 +2,6 @@
 
 **Clinical voice intelligence that listens for what patients don't say.**
 
-Built at the [Voice AI Hack](https://lu.ma/voiceaihack) (London, 2026) — **Voice & Medical** track, sponsored by Thymia and Speechmatics.
-
 ---
 
 ## What It Does
@@ -90,12 +88,6 @@ graph TD
 *Live transcript lane, Helios/Apollo/Psyche biomarker bars, and concordance flag cards. Each flag pairs the minimisation phrase with the biomarker evidence that triggered it and Claude's gloss.*
 
 ![Clinician dashboard with live transcript, concordance meter, biomarker bars, and flag cards](docs/images/dashboard.png)
-
-### Telehealth call (GP view)
-
-*The clinician's screen during a live telehealth consult. WebRTC video sits alongside the full diagnostic surface: patient tile, live diarized transcript, concordance meter, biomarker bars, and the gap panel waiting to fire when minimisation meets biomarker evidence.*
-
-![Clinician telehealth view with patient video tile, live transcript, and diagnostic dashboard side by side](docs/images/telehealth.png)
 
 ### Evidence report
 
@@ -292,11 +284,13 @@ npm run build
 ## Team
 
 
-| Name                  | GitHub                                           |
-| --------------------- | ------------------------------------------------ |
-| Joan Torres Gordo     | [@joant11](https://github.com/joant11)           |
-| Indigo Luksch         | [@IndigoLuksch](https://github.com/IndigoLuksch) |
-| Oriol Morros Vilaseca | [@omorros](https://github.com/omorros)           |
+| Name                  | 
+|-----------------------|
+| Aditya Gupta          |
+| Mrityunjai Saraswati  |
+| Akeel Mulla           | 
+| Aimee Mary Jijo       |
+
 
 
 ---
