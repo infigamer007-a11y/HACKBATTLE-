@@ -426,7 +426,7 @@ export function useVideoCall({
                 }
                 pendingCandidates.current = [];
               } else {
-                console.warn(tag, "Received answer in non-offering state:", pc.signalingState);
+                console.warn(tag, "Received duplicate answer while signalingState is stable");
               }
             } catch (e) {
               console.error(tag, "Failed to handle remote answer:", e);

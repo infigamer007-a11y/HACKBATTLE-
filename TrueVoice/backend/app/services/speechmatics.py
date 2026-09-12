@@ -50,7 +50,7 @@ def _default_client_factory(api_key: str):
             conversation_config=ConversationConfig(
                 end_of_utterance_silence_trigger=0.7
             ),
-            max_delay=2.0,
+            max_delay=0.5,
         )
         default_audio_format = AudioFormat(
             encoding=AudioEncoding.PCM_S16LE,
