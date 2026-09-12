@@ -11,24 +11,33 @@ export async function startAudioCapture(opts: {
   role: Role;
   wsUrl: string;
 }): Promise<AudioCaptureHandle> {
-  const ctx = new AudioContext({ sampleRate: 48000 });
-  if (ctx.sampleRate !== 48000) {
-    throw new Error(
-      `AudioContext rate is ${ctx.sampleRate}, expected 48000. Downsampling would be wrong.`
-    );
+  const AudioContextClass =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext: typeof AudioContext })
+      .webkitAudioContext;
+
+  const ctx = new AudioContextClass();
+  if (ctx.state === "suspended") {
+    await ctx.resume().catch((err) => console.warn("[audio] resume failed:", err));
   }
 
   await ctx.audioWorklet.addModule("/pcm-worklet.js");
 
   const src = ctx.createMediaStreamSource(opts.stream);
-  const node = new AudioWorkletNode(ctx, "pcm-worklet");
+  const node = new AudioWorkletNode(ctx, "pcm-worklet", {
+    processorOptions: { sampleRate: ctx.sampleRate },
+  });
   src.connect(node);
 
   const ws = new WebSocket(opts.wsUrl);
   ws.binaryType = "arraybuffer";
 
+  ws.onerror = (err) => {
+    console.error("[audioCapture ws error]", opts.wsUrl, err);
+  };
+
   node.port.onmessage = (e: MessageEvent) => {
-    if (ws.readyState === 1) {
+    if (ws.readyState === WebSocket.OPEN) {
       ws.send(e.data);
     }
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Role } from "./types";
+import { Role, resolveBackendWs } from "./types";
 
 type SignalMsg =
   | { type: "ready"; role?: Role; peer: Role | null }
@@ -64,11 +64,7 @@ type Opts = {
 };
 
 function getSignalingWsUrl(role: Role, roomId: string): string {
-  if (typeof window !== "undefined") {
-    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${window.location.host}/ws/signal/${encodeURIComponent(role)}/${encodeURIComponent(roomId)}`;
-  }
-  const base = process.env.NEXT_PUBLIC_BACKEND_WS_URL || "ws://localhost:8000";
+  const base = resolveBackendWs().replace(/\/$/, "");
   return `${base}/ws/signal/${encodeURIComponent(role)}/${encodeURIComponent(roomId)}`;
 }
 
